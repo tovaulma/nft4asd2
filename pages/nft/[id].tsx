@@ -7,6 +7,8 @@ import { Collection } from '../../typings'
 import Link from 'next/link'
 import { BigNumber } from 'ethers'
 import { toNamespacedPath } from 'path';
+import Head from 'next/head'
+import toast, { Toaster } from 'react-hot-toast'
 
 interface Props {
     collection: Collection
@@ -59,6 +61,16 @@ function NFTDropPage({collection}: Props) {
 
         setLoading(true);
 
+        const notification = toast.loading('Minting...', {
+            style: {
+                background: 'white',
+                color: 'green',
+                fontWeight: 'bolder',
+                fontSize: '17px',
+                padding: '20px',
+            }
+        })
+
         nftDrop.claimTo(address, quantity).then(async (tx) => {
             const receipt = tx[0].receipt;
             const claimedTokenId = tx[0].id;
@@ -68,15 +80,42 @@ function NFTDropPage({collection}: Props) {
             console.log(receipt);
             console.log(claimedTokenId);
             console.log(claimedNFT);
+
+            toast('NFT Successfully Minted!', {
+                duration: 8000,
+                style: {
+                    background: 'white',
+                    color: 'green',
+                    fontWeight: 'bolder',
+                    fontSize: '17px',
+                    padding: '20px',
+                }
+            })
         }).catch(err => {
             console.log(err);
+            toast('Something went wrong...', {
+                duration: 8000,
+                style: {
+                    background: 'red',
+                    color: 'white',
+                    fontWeight: 'bolder',
+                    fontSize: '17px',
+                    padding: '20px',
+                }
+            })
         }).finally(() => {
             setLoading(false);
+            toast.dismiss(notification);
         })
     }
 
     return (
     <div className='flex h-screen flex-col lg:grid lg:grid-cols-10'>
+        <Toaster position="bottom-center"/>
+        <Head>
+            <title>{collection.title}</title>
+            <link rel="icon" href="/favicon.ico" />
+        </Head>
         {/* Left */}
         <div className='lg:col-span-4 bg-gradient-to-br from-green-400 to-blue-300'>
             <div className='flex flex-col items-center justify-center py-2 lg:min-h-screen'>
@@ -88,7 +127,7 @@ function NFTDropPage({collection}: Props) {
                     <h1 className='text-4xl font-bold text-white'>
                         {collection.nftCollectionName}
                     </h1>
-                    <h2 className='text-xl text-gray-100'>
+                    <h2 className='text-lg text-gray-100'>
                         {collection.description}
                     </h2>
                 </div>
@@ -104,7 +143,7 @@ function NFTDropPage({collection}: Props) {
                 <button className='rounded-full bg-blue-300 text-white px-4 py-2 text-xs 
                 font-bold lg:px-5 lg:py-3 lg:text-base' 
                 onClick={() => address ? disconnect() : connectWithMetamask()}>
-                    {address ? 'Sign Out' : 'Sign In'}
+                    {address ? 'Sign Out' : 'Sign In with MetaMask'}
                 </button>
             </header>
 
